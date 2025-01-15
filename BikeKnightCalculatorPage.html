@@ -99,8 +99,8 @@
         <div class="input-section">
             <label for="tireSize">Tire Size:</label>
             <select id="tireSize" onchange="updateTireCircumference()">
-                <option value="13.01" selected>3.50 x 10</option>
-                <option value="9">3.00 x 10</option>
+                <option value="53.41" selected>3.50 x 10</option> <!-- 31.14 inches around - is the actual measurement from the wheel -->
+                <option value="50.27">3.00 x 10</option> <!-- 25 inches around-  is the actual measurement from the wheel -->
             </select>
         </div>
 
@@ -189,8 +189,8 @@
 <script>
 // Function to calculate speed for a given RPM, primary gear ratio, and individual gear ratio
 const calculateSpeed = (rpm, primaryGearRatio, gearRatio, tireCircumference) => {
-   const result = ((((rpm * primaryGearRatio * (gearRatio)) / 60) * tireCircumference) * (3600 / 63360));
-   //const result =1  ;
+   const result = (rpm* tireCircumference* 60)/ (primaryGearRatio * gearRatio * 12*5280)// RM seems low
+ 
     return Math.min(result, 80); // Cap speed at 80 MPH
 };
 
@@ -198,23 +198,30 @@ const calculateSpeed = (rpm, primaryGearRatio, gearRatio, tireCircumference) => 
 function createGraph() {
     // Get values from inputs
     const maxRPM = parseFloat(document.getElementById('maxRPM').value) || 7100;
-    const gear1Ratio = parseFloat(document.getElementById('gear1').value) || 57 / 12; // First gear ratio
-    const gear2Ratio = parseFloat(document.getElementById('gear2').value) || 42 / 13; // Second gear ratio
-    const gear3Ratio = parseFloat(document.getElementById('gear3').value) || 39 / 17; // Third gear ratio
-    const gear4Ratio = parseFloat(document.getElementById('gear4').value) || 36 / 19; // Fourth gear ratio
-    const primaryGearRatio = parseFloat(document.getElementById("primary-gear-ratio-result").textContent.split(': ')[1]) || 1; // Primary Gear Ratio
-    const tireSize = document.getElementById('tireSize').value;
-    const tireCircumference = tireSize === '3.50 x 10' ? 31.14 : 25; // Updated circumference value for 3.50 x 10 tires
+  
+    const cushDrive1stGear = parseFloat(document.getElementById("cushDrive1stGear").value) || 0;
+    const cushDrive2ndGear = parseFloat(document.getElementById("cushDrive2ndGear").value) || 0;
+    const cushDrive3rdGear = parseFloat(document.getElementById("cushDrive3rdGear").value) || 0;
+    const cushDrive4thGear = parseFloat(document.getElementById("cushDrive4thGear").value) || 0;
+    
+    const gear1Ratio = parseFloat(document.getElementById('gear1').value/cushDrive1stGear) || 57 / 12; // First gear ratio
+    const gear2Ratio = parseFloat(document.getElementById('gear2').value/cushDrive2ndGear) || 42 / 13; // Second gear ratio
+    const gear3Ratio = parseFloat(document.getElementById('gear3').value/cushDrive3rdGear) || 39 / 17; // Third gear ratio
+    const gear4Ratio = parseFloat(document.getElementById('gear4').value/cushDrive4thGear) || 36 / 19; // Fourth gear ratio
 
+    const primaryGearRatio = parseFloat(document.getElementById("primary-gear-ratio-result").textContent.split(': ')[1]) || 1; // Primary Gear Ratio
+    
+    const tireSize= parseFloat(document.getElementById('tireSize').value); 
+    
     // Prepare RPM values for the graph, starting from 0 and incrementing by 500
     const rpmValues = Array.from({length: Math.ceil(maxRPM / 500) + 1}, (_, i) => i * 500);
 
+
     // Calculate speeds for each gear and RPM, capping at 80 MPH
-    // Speed Math: (((RPM x Primary Gear Ratio x Selected gear gear ratio)/60) X Circumference) x (3600 / 63360)
-    const speeds1 = rpmValues.map(rpm => calculateSpeed(rpm, primaryGearRatio, gear1Ratio, tireCircumference).toFixed(2));
-    const speeds2 = rpmValues.map(rpm => calculateSpeed(rpm, primaryGearRatio, gear2Ratio, tireCircumference).toFixed(2));
-    const speeds3 = rpmValues.map(rpm => calculateSpeed(rpm, primaryGearRatio, gear3Ratio, tireCircumference).toFixed(2));
-    const speeds4 = rpmValues.map(rpm => calculateSpeed(rpm, primaryGearRatio, gear4Ratio, tireCircumference).toFixed(2));
+    const speeds1 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear1Ratio, tireSize).toFixed(2));
+    const speeds2 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear2Ratio, tireSize).toFixed(2));
+    const speeds3 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear3Ratio, tireSize).toFixed(2));
+    const speeds4 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear4Ratio, tireSize).toFixed(2));
 
     // Create the chart
     const ctx = document.getElementById('speedGraph').getContext('2d');
@@ -281,7 +288,6 @@ function createGraph() {
 
 </script>
 
-// Speed Math: (((RPM x Primary Gear Ratio x Selected gear gear ratio)/60) X Circumference) x (3600 / 63360)
 
 
 

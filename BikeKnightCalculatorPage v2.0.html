@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vespa Gearing Calculator</title>
+
+
+    <style>
+        .graph-container {
+            width: 800px;   /* Display size of the canvas */
+            height: auto;   /* Maintain aspect ratio */
+        }
+
+            /* Add this new CSS rule below */
+        .gear-ratio {
+            font-size: 1.2em; /* Adjust size as needed */
+            font-weight: bold; /* Makes text bold */
+            color: #333; /* Darker text for readability */
+            margin-top: 5px;
+        }
+    </style>
+
+</head>
+<body>
+    <section class="calculator">
+        <h1>Vespa Gearing Calculator</h1>
+
+        <!-- CLutch Drive Section Header -->
+        <h3 style="font-weight: bold; margin-top: 20px;">Clutch</h3>
+
+        <!-- Clutch Gear -->
+        <div class="input-section">
+            <label for="clutchGear">Clutch Gear:</label>
+            <input type="number" id="clutchGear" value="23" placeholder="Enter Clutch Gear">
+        </div>
+        
+        <!-- Cush Drive Primary Gear -->
+        <div class="input-section">
+            <label for="cushDrivePrimaryGear">Cush Drive Primary Gear:</label>
+            <input type="number" id="cushDrivePrimaryGear" value="65" placeholder="Enter Cush Drive Primary Gear">
+        </div>
+
+        <!-- Button to calculate Primary Gear Ratio - Button removed to add auto updated-  -->
+        <!-- <button onclick="calculatePrimaryGearRatio()">Calculate Primary Gear Ratio</button>-->
+
+        <!-- Section to display the Primary Gear Ratio result -->
+        <!-- <div id="primary-gear-ratio-result"></div>-->
+        <div id="primary-gear-ratio-result"><strong>Primary Gear Ratio: -</strong></div>
+
+        <!-- Cush Drive Section Header -->
+        <h3 style="font-weight: bold; margin-top: 20px;">Cush Drive</h3>
+
+        <!-- Cush Drive 1st Gear -->
+        <div class="input-section">
+            <label for="cushDrive1stGear">Cush Drive 1st Gear:</label>
+            <input type="number" id="cushDrive1stGear" value="12" placeholder="Enter Cush Drive 1st Gear">
+        </div>
+
+        <!-- Cush Drive 2nd Gear -->
+        <div class="input-section">
+            <label for="cushDrive2ndGear">Cush Drive 2nd Gear:</label>
+            <input type="number" id="cushDrive2ndGear" value="13" placeholder="Enter Cush Drive 2nd Gear">
+        </div>
+
+        <!-- Cush Drive 3rd Gear -->
+        <div class="input-section">
+            <label for="cushDrive3rdGear">Cush Drive 3rd Gear:</label>
+            <input type="number" id="cushDrive3rdGear" value="17" placeholder="Enter Cush Drive 3rd Gear">
+        </div>
+
+        <!-- Cush Drive 4th Gear -->
+        <div class="input-section">
+            <label for="cushDrive4thGear">Cush Drive 4th Gear:</label>
+            <input type="number" id="cushDrive4thGear" value="21" placeholder="Enter Cush Drive 4th Gear">
+        </div>
+
+        <!-- Drive Shaft Section Header -->
+        <h3 style="font-weight: bold; margin-top: 20px;">Drive Shaft</h3>
+
+        <!-- 1st Gear -->
+        <div class="input-section">
+            <label for="gear1">1st Gear:</label>
+            <input type="number" id="gear1" value="57" placeholder="Enter 1st Gear">
+        </div>
+        
+        <!-- 2nd Gear -->
+        <div class="input-section">
+            <label for="gear2">2nd Gear:</label>
+            <input type="number" id="gear2" value="42" placeholder="Enter 2nd Gear">
+        </div>
+        
+        <!-- 3rd Gear -->
+        <div class="input-section">
+            <label for="gear3">3rd Gear:</label>
+            <input type="number" id="gear3" value="38" placeholder="Enter 3rd Gear">
+        </div>
+        
+        <!-- 4th Gear -->
+        <div class="input-section">
+            <label for="gear4">4th Gear:</label>
+            <input type="number" id="gear4" value="36" placeholder="Enter 4th Gear">
+        </div>
+
+        <!-- Button to calculate gear ratios  - Button removed to add auto updated-->
+        <!-- <button onclick="calculateGearRatios()">Calculate Gear Ratios</button>  --> 
+
+        <!-- Gear ratio results -->
+        <div id="gear-ratio-1"></div>
+        <div id="gear-ratio-2"></div>
+        <div id="gear-ratio-3"></div>
+        <div id="gear-ratio-4"></div>
+
+        <!-- Other gear inputs (your existing code) -->
+
+         <!-- Other Inputs Section Header -->
+         <h3 style="font-weight: bold; margin-top: 20px;">Other Inputs</h3>
+        
+        <!-- Tire Size Dropdown (with default 3.50 x 10) -->
+        <div class="input-section">
+            <label for="tireSize">Tire Size:</label>
+            <select id="tireSize" onchange="updateTireCircumference()">
+                <option value="53.41" selected>3.50 x 10</option> <!-- 31.14 inches around - is the actual measurement from the wheel -->
+                <option value="50.27">3.00 x 10</option> <!-- 25 inches around-  is the actual measurement from the wheel -->
+            </select>
+        </div>
+
+        <!-- Hidden field to store the tire circumference -->
+        <input type="hidden" id="tireCircumference" value="10.35"> <!-- Default value for 3.50 x 10 -->
+
+        <!-- Max RPM Input Box -->
+        <div class="input-section">
+            <label for="maxRPM">Max RPM:</label>
+            <input type="number" id="maxRPM" value="7100" placeholder="Enter Max RPM">
+        </div>
+
+        <!-- Create Graph Button -->
+        <button onclick="createGraph()">Create Graph</button>
+
+        <div id="graphMessage" style="display: none; color: red; font-weight: bold; margin-top: 10px;">
+            Changes detected! Click "Create Graph" to update.
+        </div>
+
+        <!-- Graph Container -->
+        <div class="graph-container">
+            <canvas id="speedGraph" width="25" height="10"></canvas> <!-- Example size -->
+        </div>
+       
+    </section>
+
+    <script>
+        function showGraphMessage() {
+            document.getElementById("graphMessage").style.display = "block";
+        }
+    
+        document.querySelectorAll("#clutchGear, #cushDrivePrimaryGear, #cushDrive1stGear, #gear1, #cushDrive2ndGear, #gear2, #cushDrive3rdGear, #gear3, #cushDrive4thGear, #gear4, #tireSize, #maxRPM")
+            .forEach(input => {
+                input.addEventListener("input", showGraphMessage);
+            });
+    </script>
+    
+
+    <script>
+        // Function to update the tire circumference based on the selected tire size
+        function updateTireCircumference() {
+            const tireSizeSelect = document.getElementById("tireSize");
+            const selectedCircumference = tireSizeSelect.value; // Get the circumference from the selected option
+            document.getElementById("tireCircumference").value = selectedCircumference; // Set the hidden field
+        }
+    </script>
+
+    <script>
+        // Function to calculate the Primary Gear Ratio
+        function calculatePrimaryGearRatio() {
+            const clutchGear = parseFloat(document.getElementById("clutchGear").value) || 0;
+            const cushDrivePrimaryGear = parseFloat(document.getElementById("cushDrivePrimaryGear").value) || 0;
+
+            const primaryGearRatio = clutchGear !== 0 ? (cushDrivePrimaryGear / clutchGear).toFixed(2) : "N/A";
+
+           // document.getElementById("primary-gear-ratio-result").innerHTML = `Primary Gear Ratio: ${primaryGearRatio}`;//This is regular text
+            document.getElementById("primary-gear-ratio-result").innerHTML = `<strong>Primary Gear Ratio: ${primaryGearRatio}</strong>`;//  This is BOLD text
+            return primaryGearRatio;  // Return this value for overall ratio calculations
+        }
+
+        // 🔹 Auto-update Primary Gear Ratio when clutch or cush drive primary gear inputs change
+            document.querySelectorAll("#clutchGear, #cushDrivePrimaryGear")
+                .forEach(input => {
+                    input.addEventListener("input", () => {
+                        calculatePrimaryGearRatio();
+                    });
+                });
+
+        // Run Primary Gear Ratio calculation on page load (default stock values)
+        window.onload = function() {
+            calculatePrimaryGearRatio();
+        };
+
+         // Function to calculate Gear Ratios and Overall Gear Ratios
+         function calculateGearRatios() {
+            // Get the primary gear ratio
+            const primaryGearRatio = calculatePrimaryGearRatio();
+
+            // Get the gear and cush drive gear values
+            const gear1 = parseFloat(document.getElementById("gear1").value) || 0;
+            const gear2 = parseFloat(document.getElementById("gear2").value) || 0;
+            const gear3 = parseFloat(document.getElementById("gear3").value) || 0;
+            const gear4 = parseFloat(document.getElementById("gear4").value) || 0;
+
+            const cushDrive1stGear = parseFloat(document.getElementById("cushDrive1stGear").value) || 0;
+            const cushDrive2ndGear = parseFloat(document.getElementById("cushDrive2ndGear").value) || 0;
+            const cushDrive3rdGear = parseFloat(document.getElementById("cushDrive3rdGear").value) || 0;
+            const cushDrive4thGear = parseFloat(document.getElementById("cushDrive4thGear").value) || 0;
+
+            // Calculate the gear ratios
+            const gearRatio1 = cushDrive1stGear !== 0 ? (gear1 / cushDrive1stGear).toFixed(2) : "N/A";
+            const gearRatio2 = cushDrive2ndGear !== 0 ? (gear2 / cushDrive2ndGear).toFixed(2) : "N/A";
+            const gearRatio3 = cushDrive3rdGear !== 0 ? (gear3 / cushDrive3rdGear).toFixed(2) : "N/A";
+            const gearRatio4 = cushDrive4thGear !== 0 ? (gear4 / cushDrive4thGear).toFixed(2) : "N/A";
+
+            // Calculate the overall gear ratios
+            const overallGearRatio1 = primaryGearRatio !== "N/A" && gearRatio1 !== "N/A" ? (primaryGearRatio * gearRatio1).toFixed(2) : "N/A";
+            const overallGearRatio2 = primaryGearRatio !== "N/A" && gearRatio2 !== "N/A" ? (primaryGearRatio * gearRatio2).toFixed(2) : "N/A";
+            const overallGearRatio3 = primaryGearRatio !== "N/A" && gearRatio3 !== "N/A" ? (primaryGearRatio * gearRatio3).toFixed(2) : "N/A";
+            const overallGearRatio4 = primaryGearRatio !== "N/A" && gearRatio4 !== "N/A" ? (primaryGearRatio * gearRatio4).toFixed(2) : "N/A";
+
+            // Display the results for each gear ratio and the overall ratio
+            document.getElementById("gear-ratio-1").innerHTML = `<strong>1st Gear Ratio: ${gearRatio1} </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Overall 1st Gear Ratio: ${overallGearRatio1}</strong>`;
+            document.getElementById("gear-ratio-2").innerHTML = `<strong>2nd Gear Ratio: ${gearRatio2} </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Overall 2nd Gear Ratio: ${overallGearRatio2}</strong>`;
+            document.getElementById("gear-ratio-3").innerHTML = `<strong>3rd Gear Ratio: ${gearRatio3} </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Overall 3rd Gear Ratio: ${overallGearRatio3}</strong>`;
+            document.getElementById("gear-ratio-4").innerHTML = `<strong>4th Gear Ratio: ${gearRatio4} </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Overall 4th Gear Ratio: ${overallGearRatio4}</strong>`;
+        }
+
+
+
+            // Run calculateGearRatios() when any relevant input changes
+             document.querySelectorAll("#clutchGear, #cushDrivePrimaryGear, #cushDrive1stGear, #gear1, #cushDrive2ndGear, #gear2, #cushDrive3rdGear, #gear3, #cushDrive4thGear, #gear4")
+                .forEach(input => {
+                    input.addEventListener("input", () => {
+                        calculateGearRatios();
+                    });
+                });
+
+            // 🔹 Run Primary Gear Ratio AND Gear Ratios on page load
+            window.onload = function() {
+                calculatePrimaryGearRatio();  // Display default stock primary gear ratio
+                calculateGearRatios();        // Display default stock gear ratios
+            };           
+
+    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js library -->
+
+
+<script>
+    // Flags to track calculation status
+    let primaryGearCalculated = false;
+    let gearRatiosCalculated = false;
+
+// Function to calculate speed for a given RPM, primary gear ratio, and individual gear ratio
+const calculateSpeed = (rpm, primaryGearRatio, gearRatio, tireCircumference) => {
+   const result = (rpm* tireCircumference* 60)/ (primaryGearRatio * gearRatio * 12*5280)// RM seems low
+   return Math.min(result, 80); // Cap speed at 80 MPH
+};
+
+// Function to create the graph
+let chartInstance = null; // Global variable to store chart instance
+
+function createGraph() {
+    // Hide the message when the graph is updated
+    document.getElementById("graphMessage").style.display = "none"; 
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+    // Get values from inputs
+    const maxRPM = parseFloat(document.getElementById('maxRPM').value) || 7100;
+  
+    const cushDrive1stGear = parseFloat(document.getElementById("cushDrive1stGear").value) || 0;
+    const cushDrive2ndGear = parseFloat(document.getElementById("cushDrive2ndGear").value) || 0;
+    const cushDrive3rdGear = parseFloat(document.getElementById("cushDrive3rdGear").value) || 0;
+    const cushDrive4thGear = parseFloat(document.getElementById("cushDrive4thGear").value) || 0;
+    
+    const gear1Ratio = parseFloat(document.getElementById('gear1').value/cushDrive1stGear) || 57 / 12; // First gear ratio
+    const gear2Ratio = parseFloat(document.getElementById('gear2').value/cushDrive2ndGear) || 42 / 13; // Second gear ratio
+    const gear3Ratio = parseFloat(document.getElementById('gear3').value/cushDrive3rdGear) || 39 / 17; // Third gear ratio
+    const gear4Ratio = parseFloat(document.getElementById('gear4').value/cushDrive4thGear) || 36 / 19; // Fourth gear ratio
+
+    const primaryGearRatio = parseFloat(document.getElementById("primary-gear-ratio-result").textContent.split(': ')[1]) || 1; // Primary Gear Ratio
+    
+    const tireSize= parseFloat(document.getElementById('tireSize').value); 
+    
+    // Prepare RPM values for the graph, starting from 0 and incrementing by 500
+    const rpmValues = Array.from({length: Math.ceil(maxRPM / 500) + 1}, (_, i) => i * 500);
+
+
+    // Calculate speeds for each gear and RPM, capping at 80 MPH
+    const speeds1 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear1Ratio, tireSize).toFixed(2));
+    const speeds2 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear2Ratio, tireSize).toFixed(2));
+    const speeds3 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear3Ratio, tireSize).toFixed(2));
+    const speeds4 = rpmValues.map(rpmValues => calculateSpeed(rpmValues, primaryGearRatio, gear4Ratio, tireSize).toFixed(2));
+
+    // Create the chart
+    const ctx = document.getElementById('speedGraph').getContext('2d');
+    chartInstance = new Chart(ctx, { // Store new chart instance in global variable
+        type: 'line',
+        data: {
+            labels: rpmValues, // RPM values on x-axis
+            datasets: [
+                {
+                    label: '1st Gear',
+                    data: speeds1,
+                    borderColor: 'red',
+                    fill: false
+                },
+                {
+                    label: '2nd Gear',
+                    data: speeds2,
+                    borderColor: 'blue',
+                    fill: false
+                },
+                {
+                    label: '3rd Gear',
+                    data: speeds3,
+                    borderColor: 'green',
+                    fill: false
+                },
+                {
+                    label: '4th Gear',
+                    data: speeds4,
+                    borderColor: 'orange',
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'RPM'
+                    },
+                    ticks: {
+                        stepSize: 500,
+                        min: 0, // Start RPM at 0
+                        max: maxRPM // Set the max RPM based on user input
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Speed (MPH)'
+                    },
+                    min: 0,
+                    max: 80, // Enforce max speed to stop at 80 MPH
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+
+
+</script>
+
+
+
+
+
+
+</body>
+</html>
